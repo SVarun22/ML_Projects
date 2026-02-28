@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Comparison — FakeShield</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07090f; --s1:#0d1117; --s2:#111827; --s3:#1a2234;
+  --border:#1e2d45; --border2:#253550;
+  --cyan:#00e5ff; --green:#00ff88; --red:#ff3d5a;
+  --yellow:#ffd600; --purple:#a78bfa;
+  --text:#e2e8f0; --muted:#64748b; --muted2:#94a3b8;
+  --mono:'Space Mono',monospace; --sans:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0;
+}
+
+header{
+  position:relative;z-index:20;padding:18px 44px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);background:rgba(7,9,15,.85);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:21px;letter-spacing:-0.5px;
+  text-decoration:none;color:var(--text);
+}
+.logo-box{
+  width:34px;height:34px;
+  background:linear-gradient(135deg,var(--cyan),#0070f3);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+nav{display:flex;align-items:center;gap:4px;}
+nav a{
+  padding:7px 16px;border-radius:8px;
+  color:var(--muted2);text-decoration:none;
+  font-size:13px;font-weight:600;letter-spacing:.3px;transition:all .2s;
+}
+nav a:hover{background:rgba(255,255,255,.05);color:var(--text);}
+nav a.active{background:rgba(0,229,255,.1);color:var(--cyan);}
+
+main{
+  position:relative;z-index:1;
+  max-width:1100px;margin:0 auto;
+  padding:50px 24px 90px;
+}
+
+.page-hdr{margin-bottom:40px;animation:su .5s ease both;}
+.page-hdr h1{font-size:42px;font-weight:800;letter-spacing:-1.5px;margin-bottom:8px;}
+.page-hdr p{color:var(--muted2);font-size:15px;}
+.grad{
+  background:linear-gradient(120deg,var(--cyan),#0070f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* Top metric cards */
+.metric-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:14px;margin-bottom:28px;
+  animation:su .5s .1s ease both;
+}
+.m-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:14px;padding:20px;
+}
+.m-card.best{
+  border-color:rgba(0,229,255,.35);
+  background:linear-gradient(135deg,rgba(0,229,255,.04),var(--s1));
+}
+.m-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.m-name{font-size:13px;font-weight:700;line-height:1.35;flex:1;}
+.best-badge{
+  background:var(--cyan);color:#000;
+  font-family:var(--mono);font-size:8px;font-weight:700;
+  padding:2px 7px;border-radius:100px;
+  text-transform:uppercase;letter-spacing:.5px;
+  flex-shrink:0;margin-left:8px;margin-top:2px;
+}
+.m-metric{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.m-metric-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.m-metric-val{font-family:var(--mono);font-size:12px;font-weight:700;}
+.m-bar{height:2.5px;background:var(--s3);border-radius:100px;overflow:hidden;margin-bottom:7px;}
+.m-bar-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.16,1,.3,1);}
+
+/* color sets */
+.c0{color:var(--cyan);}  .c1{color:var(--green);}  .c2{color:var(--red);}  .c3{color:var(--yellow);}
+.b0{background:var(--cyan);} .b1{background:var(--green);} .b2{background:var(--red);} .b3{background:var(--yellow);}
+
+/* Chart sections */
+.chart-section{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:15px;padding:26px;margin-bottom:24px;
+  animation:su .5s .2s ease both;
+}
+.sec-title{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px;
+}
+.chart-img{width:100%;border-radius:8px;display:block;}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* Rankings table */
+.table-section{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:15px;overflow:hidden;
+  animation:su .5s .3s ease both;margin-bottom:24px;
+}
+.table-hdr{padding:18px 24px;border-bottom:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+thead th{
+  background:var(--s2);padding:11px 22px;text-align:left;
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border);
+}
+tbody td{
+  padding:14px 22px;border-bottom:1px solid rgba(30,45,69,.5);
+  font-size:13px;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:rgba(255,255,255,.015);}
+
+.rank{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;
+  font-family:var(--mono);font-size:11px;font-weight:700;
+}
+.r1{background:rgba(0,229,255,.12);color:var(--cyan);}
+.r2{background:rgba(0,255,136,.12);color:var(--green);}
+.r3{background:rgba(255,214,0,.12);color:var(--yellow);}
+.r4{background:rgba(100,116,139,.1);color:var(--muted);}
+
+.f1-cell{display:flex;align-items:center;gap:9px;}
+.f1-track{flex:1;height:4px;background:var(--s3);border-radius:100px;overflow:hidden;}
+.f1-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.16,1,.3,1);}
+.f1-num{font-family:var(--mono);font-size:11px;font-weight:700;width:48px;text-align:right;}
+
+/* Loading */
+.loading{
+  text-align:center;padding:56px;
+  color:var(--muted);font-family:var(--mono);font-size:12px;
+}
+.spin{
+  display:inline-block;width:18px;height:18px;
+  border:2px solid var(--border);border-top-color:var(--cyan);
+  border-radius:50%;animation:rot .65s linear infinite;margin-bottom:10px;
+}
+
+@keyframes su{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes rot{to{transform:rotate(360deg);}}
+
+@media(max-width:768px){.metric-grid{grid-template-columns:repeat(2,1fr);}.chart-row{grid-template-columns:1fr;}}
+@media(max-width:480px){.metric-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/frontend/static"><div class="logo-box">🛡</div>FakeShield</a>
+  <nav>
+    <a href="/frontend/static">Detector</a>
+    <a href="/compare" class="active">Model Comparison</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-hdr">
+    <h1>Model <span class="grad">Comparison</span></h1>
+    <p>Full performance breakdown of all 4 trained ML models — Logistic Regression, Random Forest, Naive Bayes, XGBoost</p>
+  </div>
+
+  <!-- Metric cards populated by JS -->
+  <div id="metricGrid" class="metric-grid">
+    <div class="loading" style="grid-column:1/-1"><div class="spin"></div><br>Loading model data…</div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-section">
+    <div class="sec-title">// Performance Charts (Accuracy · Precision · Recall · F1 · AUC)</div>
+    <img src="/static/img/comparison.png" class="chart-img" alt="Comparison"
+      onerror="this.closest('.chart-section').querySelector('.sec-title').insertAdjacentHTML('afterend','<p style=\'color:var(--muted);font-family:var(--mono);font-size:12px;padding:20px 0\'>Charts not found. Run train_models.py first.</p>');this.remove();">
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-section">
+      <div class="sec-title">// Confusion Matrices</div>
+      <img src="/static/img/confusion.png" class="chart-img" alt="Confusion"
+        onerror="this.closest('.chart-section').querySelector('.sec-title').insertAdjacentHTML('afterend','<p style=\'color:var(--muted);font-family:var(--mono);font-size:12px;padding:20px 0\'>Not found.</p>');this.remove();">
+    </div>
+    <div class="chart-section">
+      <div class="sec-title">// Radar Chart</div>
+      <img src="/static/img/radar.png" class="chart-img" alt="Radar"
+        onerror="this.closest('.chart-section').querySelector('.sec-title').insertAdjacentHTML('afterend','<p style=\'color:var(--muted);font-family:var(--mono);font-size:12px;padding:20px 0\'>Not found.</p>');this.remove();">
+    </div>
+  </div>
+
+  <!-- Rankings table -->
+  <div class="table-section">
+    <div class="table-hdr">
+      <div class="sec-title">// Full Rankings — sorted by F1 Score</div>
+    </div>
+    <div id="rankTable"><div class="loading"><div class="spin"></div></div></div>
+  </div>
+</main>
+
+<script>
+const CC = ['c0','c1','c2','c3'];
+const BC = ['b0','b1','b2','b3'];
+const RCLS = ['r1','r2','r3','r4'];
+
+fetch('/api/comparison_data')
+  .then(r => r.json())
+  .then(data => {
+    if(!data || !Object.keys(data).length){
+      document.getElementById('metricGrid').innerHTML =
+        '<div class="loading" style="grid-column:1/-1">No data found. Run train_models.py first.</div>';
+      return;
+    }
+
+    fetch('/api/model_info').then(r => r.json()).then(info => {
+      const best = info.best_model;
+      const sorted = Object.entries(data).sort((a,b) => b[1].f1 - a[1].f1);
+
+      // ── Metric cards ──
+      const cardsHtml = sorted.map(([name, res], i) => {
+        const isBest = name === best;
+        const metrics = [
+          {l:'Accuracy', v: res.accuracy},
+          {l:'Precision',v: res.precision},
+          {l:'Recall',   v: res.recall},
+          {l:'F1',       v: res.f1},
+          {l:'AUC',      v: res.auc},
+        ];
+        return `
+          <div class="m-card${isBest?' best':''}">
+            <div class="m-top">
+              <span class="m-name ${CC[i]}">${name}</span>
+              ${isBest?'<span class="best-badge">Best</span>':''}
+            </div>
+            ${metrics.map(m=>`
+              <div class="m-bar">
+                <div class="m-bar-fill ${BC[i]}" style="width:0" data-w="${(m.v*100).toFixed(1)}%"></div>
+              </div>
+              <div class="m-metric">
+                <span class="m-metric-lbl">${m.l}</span>
+                <span class="m-metric-val ${CC[i]}">${(m.v*100).toFixed(2)}%</span>
+              </div>
+            `).join('')}
+          </div>`;
+      }).join('');
+
+      document.getElementById('metricGrid').innerHTML = cardsHtml;
+      setTimeout(() => {
+        document.querySelectorAll('.m-bar-fill').forEach(el => el.style.width = el.dataset.w);
+      }, 80);
+
+      // ── Rankings table ──
+      const short = ['Log. Reg.','Rnd. Forest','Naive Bayes','XGBoost'];
+      const colMap = [
+        'var(--cyan)','var(--green)','var(--yellow)','var(--muted2)'
+      ];
+
+      const tableHtml = `
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>AUC</th>
+              <th>F1 Score ↓</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(([name, res], i) => `
+              <tr>
+                <td><span class="rank ${RCLS[i]}">${i+1}</span></td>
+                <td>
+                  <span style="font-weight:700;color:${colMap[i]}">${name}</span>
+                  ${name===best?'<span class="best-badge" style="margin-left:8px">Best</span>':''}
+                </td>
+                <td style="font-family:var(--mono)">${(res.accuracy*100).toFixed(2)}%</td>
+                <td style="font-family:var(--mono)">${(res.precision*100).toFixed(2)}%</td>
+                <td style="font-family:var(--mono)">${(res.recall*100).toFixed(2)}%</td>
+                <td style="font-family:var(--mono)">${(res.auc*100).toFixed(2)}%</td>
+                <td>
+                  <div class="f1-cell">
+                    <div class="f1-track">
+                      <div class="f1-fill ${BC[i]}" style="width:0" data-w="${(res.f1*100).toFixed(1)}%"></div>
+                    </div>
+                    <span class="f1-num ${CC[i]}">${(res.f1*100).toFixed(2)}%</span>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+
+      document.getElementById('rankTable').innerHTML = tableHtml;
+      setTimeout(() => {
+        document.querySelectorAll('.f1-fill').forEach(el => el.style.width = el.dataset.w);
+      }, 80);
+    });
+  })
+  .catch(() => {
+    document.getElementById('metricGrid').innerHTML =
+      '<div class="loading" style="grid-column:1/-1">Cannot connect to server.</div>';
+  });
+</script>
+</body>
+</html>
